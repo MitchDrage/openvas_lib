@@ -573,9 +573,9 @@ class GMPv224(OMP):
 		"""
 
 		if not port_list:
-			port_list = self.get_port_lists().get("openvas default").get('id')
+			port_list = self.get_port_lists().get("all iana assigned tcp and udp").get('id')
 
-		from collections import Iterable
+		from collections.abc import Iterable
 		if isinstance(hosts, str):
 			m_targets = hosts
 		elif isinstance(hosts, Iterable):
@@ -892,11 +892,11 @@ class GMPv224(OMP):
 			raise ServerError("Task not found")
 
 		if status.text in ("Running", "Pause Requested", "Paused"):
-			h = tasks.findall('.//task[@id="%s"]/progress/host_progress/host' % task_id)
+			h = tasks.findall('.//task[@id="%s"]/progress' % task_id)
 
 			if h is not None:
 				m_progress_len += float(len(h))
-				m_sum_progress += sum([float(x.tail) for x in h])
+				m_sum_progress += sum([float(x.text) for x in h])
 
 		elif status.text in ("Delete Requested", "Done", "Stop Requested", "Stopped", "Internal Error"):
 			return 100.0  # Task finished
