@@ -1025,7 +1025,7 @@ class GMPv224(OMP):
 		"""
 
 		if task_id:
-			m_query = '<get_results task_id="%s"/>' % task_id
+			m_query = '<get_results task_id="%s" filter="rows=-1"/>' % task_id
 		else:
 			m_query = '<get_results/>'
 
