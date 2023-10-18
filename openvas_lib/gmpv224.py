@@ -1023,11 +1023,14 @@ class GMPv224(OMP):
 
 		:raises: ClientError, ServerError
 		"""
+		print(task_id)
 
 		if task_id:
-			m_query = '<get_results task_id="%s" filter="rows=-1"/>' % task_id
+			m_query = '<get_results filter="task_id=%s rows=-1 levels=hml min_qod=30 sort-reverse=severity"/>' % task_id
 		else:
 			m_query = '<get_results/>'
+		
+		print(m_query)
 
 		return self._manager.make_xml_request(m_query, xml_result=True)
 
@@ -1104,7 +1107,7 @@ class GMPv224(OMP):
 			raise TypeError("Expected string, got %r instead" % type(report_id))
 
 		try:
-			m_response = self._manager.make_xml_request('<get_reports report_id="%s" />' % report_id, xml_result=True)
+			m_response = self._manager.make_xml_request('<get_reports report_id="%s" ignore_pagination="1" details="1" filter="rows=-1 levels=hml min_qod=30 sort-reverse=severity"/>' % report_id, xml_result=True)
 		except ServerError as e:
 			print("Can't get the xml for the report %s. Error: %s" % (report_id, e.message))
 
