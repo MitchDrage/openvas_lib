@@ -17,11 +17,18 @@ try:
 except ImportError:
 	from xml.etree import ElementTree as etree
 
-from collections.abc import Iterable
+try:
+	from collections import Iterable
+except ImportError:
+	# Support python >=3.10
+	from collections.abc import Iterable
 
 from openvas_lib.data import *
 from openvas_lib.utils import *
 from openvas_lib.common import *
+from openvas_lib.ompv4 import OMPv4
+from openvas_lib.ompv7 import OMPv7
+from openvas_lib.gmpv224 import GMPv224
 
 import re
 
@@ -679,7 +686,12 @@ class VulnscanManager(object):
 
 		comment = str(kwargs.get("comment", 'New scan launched on target hosts: %s' % ",".join(target)))
 
-		port_list_name = kwargs.get("port_list", "openvas default")
+		if isinstance(self.__manager, OMPv4) or isinstance(self.__manager, OMPv7):
+			port_list_name = kwargs.get("port_list", "openvas default")
+		elif isinstance(self.__manager, GMPv224):
+			port_list_name = kwargs.get("port_list", "all tcp and nmap top 100 udp")
+		else:
+			raise RemoteVersionError("Unknown OpenVAS version for remote host.")
 		if not isinstance(port_list_name, str):
 			raise TypeError("Expected string, got %r instead" % type(port_list_name))
 
@@ -1016,7 +1028,8 @@ class VulnscanManager(object):
 				"Task is currently running. Until it not finished, you can't obtain the results.")
 
 		try:
-			m_response = self.__manager.get_results(task_id)
+			latest_report = self.__manager.get_report_id(task_id)
+			m_response = self.__manager.get_report_xml(latest_report)
 		except ServerError as e:
 			raise VulnscanServerError("Can't get the results for the task %s. Error: %s" % (task_id, e.message))
 
